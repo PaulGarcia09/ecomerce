@@ -29,7 +29,7 @@ const vtas = require('./consola/ventas');
 const pagosempeno = require('./consola/empeno');
 const Notification = require("./notificaciones/notificaciones");
 const GenerateToken = require("./generateToken.js") 
-
+const ConsultarNotificaciones = require('./notificaciones/consultas');
 //carrito 
 
 const carrito = require('./webapi/carrito/consultas');
@@ -1216,6 +1216,15 @@ app.get('/api/image',(req,res)=>{
           });
       
 });
+
+//Notificaciones para app
+
+app.get('/api/notificaciones/procesos/consultarvencidas',(req,res)=>{
+    ConsultarNotificaciones.cBoletasvencidas().then(respuesta=>{
+            res.send(respuesta);
+    })
+});
+
 app.post('/api/enviarsms',upload.array(),(req,res)=>{
 
     let number = req.query.celular ? req.query.celular : undefined;
@@ -1490,6 +1499,8 @@ app.get('/api/consola/pagos/ventas',(req,res)=>{
             res.send(respuesta);
     })
 });
+
+
 app.post('/api/consola/pagos/empeno',upload.array(),(req,res)=>{
 
    var bol = req.body.Boleta;
