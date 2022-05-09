@@ -27,8 +27,8 @@ const contacto = require('./webapi/serviciosadicionales/contacto');
 const sms = require('./webapi/sms/sendsms');
 const vtas = require('./consola/ventas');
 const pagosempeno = require('./consola/empeno');
-
-
+const Notification = require("./notificaciones/notificaciones");
+const GenerateToken = require("./generateToken.js") 
 
 //carrito 
 
@@ -787,6 +787,7 @@ app.post('/api/procesar2dsecure/boletas',upload.array(),(req,res,next)=>{
     var Cliente= req.body.Cliente;
     var fechaConsulta= req.body.fechaConsulta;
 
+
     var eci = req.body.eci ? req.body.eci : undefined;
     var xid = req.body.xid ? req.body.xid : undefined;
     var cavv = req.body.cavv ? req.body.cavv : undefined;
@@ -1502,8 +1503,55 @@ app.post('/api/consola/pagos/ppyvales',upload.array(),(req,res)=>{
 
 })
 
+app.get('/api/notificacionesmaxilana/getToken', function(req,res){
+    GenerateToken.getAccessToken()
+    .then((token) => res.send(token))
+    .catch((err) => res.send(err))
+})
 
 
+
+    
+app.post("/api/notificacionesmaxilana/usuariounico",upload.array(), function(req, res) {
+    var Token = req.body.TokenUsr;
+    var Title = req.body.Title;
+    var Message = req.body.Message;
+    res.send("Sending Notification to One user...");
+    const data = {
+        tokenId: Token,
+        titulo: Title,
+        mensaje: Message
+    }
+    Notification.sendPushToOneUser(data);
+});
+
+app.post("/api/notificacionesmaxilana/general",upload.array(), function(req, res) {
+    var Title = req.body.Title;
+    var Message = req.body.Message;
+    var Topic = req.body.Topic;
+    res.send("Sending Notification to a Todos...");
+    const data = {
+        topic: Topic,
+        titulo: Title,
+        mensaje: Message
+    }
+    Notification.sendPushToTopic(data);
+});
+
+
+app.post("/api/notificacionesmaxilana/registrartopic",upload.array(),(req,res)=>{
+    var Topics = req.body.Topics;
+    var Tokens = req.body.TokenUsarios;
+    res.send("200");
+    Notification.registertoTopic(Tokens,Topics);
+})
+
+app.post("/api/notificacionesmaxilana/eliminartopic",upload.array(),(req,res)=>{
+    var Topics = req.body.Topics;
+    var Tokens = req.body.TokenUsarios;
+    res.send("200");
+    Notification.unRegisterTopic(Tokens,Topics);
+})
 
 app.post('/api/subastas/encrypt',upload.array(),(req,res)=>{
 

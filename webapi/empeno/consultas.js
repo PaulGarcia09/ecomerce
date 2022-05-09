@@ -148,9 +148,10 @@ let obtenerinfoboletaWSP = async function consultar(boleta,letra,prestamo){
                                         Refrendo : "1,305.80"
                                     }
                                     resolve(Res);
-                               }else{
+                                }
+                               else{
                                    let error={
-                                       error : "La informaci®Æn ingresada no es correcta."
+                                       error : "La informaci√≥n ingresada no es correcta."
                                    }
                                    resolve(error);
                                }

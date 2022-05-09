@@ -31,6 +31,7 @@ let ObtenerSaldoBoleta = async function consultar(usuario){
                 var response = JSON.parse(body);
                 response = response.data.response;
                 response = response ? response : undefined;
+            
                 if(response !== undefined){
                     for(var i = 0 ; i < response.length;i++){
                         response[i].Nombre = response[i].Nombre.trim();
