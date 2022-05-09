@@ -11,8 +11,13 @@ let sendemail = async function datos(cliente,codigosucursal,sucursal,boleta,impo
             "auth":{ 
                     "type":"login", 
                     "user":"webmaxilana@maxilana.com", 
-                    "pass":"cceMaxiWeb2015" 
+                    "pass":"M@xiW3b2022" 
                 }
+            // "auth":{ 
+            //         "type":"login", 
+            //         "user":"egarcia@maxilana.com", 
+            //         "pass":"clnEpgR2019" 
+            //     }
             };
     let body ='<table id="m_-6863763375563930348container" style="width:640px;color:rgb(51,51,51);margin:0 auto;border-collapse:collapse">';
     body = body +'<tbody>';
@@ -165,8 +170,13 @@ let sendemailprueba = async function datos(cliente,importe,autorizacion,referenc
             "auth":{ 
                     "type":"login", 
                     "user":"webmaxilana@maxilana.com", 
-                    "pass":"cceMaxiWeb2015" 
+                    "pass":"M@xiW3b2022" 
                 }
+                // "auth":{ 
+                //     "type":"login", 
+                //     "user":"egarcia@maxilana.com", 
+                //     "pass":"clnEpgR2019" 
+                // }
             };
     body = body +'<table id="m_-6863763375563930348container" style="width:640px;color:rgb(51,51,51);margin:0 auto;border-collapse:collapse">';
     body = body +'<tbody>';
@@ -329,8 +339,13 @@ let sendemailmultiple = async function datos(cliente,importe,autorizacion,refere
             "auth":{ 
                     "type":"login", 
                     "user":"webmaxilana@maxilana.com", 
-                    "pass":"cceMaxiWeb2015" 
+                    "pass":"M@xiW3b2022" 
                 }
+                // "auth":{ 
+                //     "type":"login", 
+                //     "user":"egarcia@maxilana.com", 
+                //     "pass":"clnEpgR2019" 
+                // }
             };
     body = body +'<table id="m_-6863763375563930348container" style="width:640px;color:rgb(51,51,51);margin:0 auto;border-collapse:collapse">';
     body = body +'<tbody>';

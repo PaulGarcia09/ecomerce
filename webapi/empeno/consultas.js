@@ -1,45 +1,167 @@
+const { interopDefault } = require("next/dist/server/load-components");
 const con = require("../../db/conexion");
 const soap = require("../../node_modules/soap");
 let obtenerinfoboleta = async function consultar(boleta,letra,prestamo){
+    var SelectSucursal ="SELECT HoraAperturaLV,HoraCierreLV,HoraAperturaS,HoraCierreS,HoraAperturaD,HoraCierreD,zonahoraria,now() as HoraActual FROM `sucursales` where identificador='"+letra+"'";
+    const d = new Date();
+    let dia = d.getDay();
+    let BanderaEntrada = true;
     return new Promise(function(resolve,reject){
-        var url= "http://intranet.maxilana.com/wsconsultaboleta/serviciosconsultaboleta.asmx?WSDL"
-        const args = { strBoleta: boleta, strIdentificador: letra, strImporte:prestamo};
-        soap.createClient(url, function(err, client) {
-            if (err) console.error(err);
-            else {
-              client.RegresaBoleta(args, function(err, response) {
-                if (err) console.error(err);
-                else {
-                    result = JSON.parse(JSON.stringify(response));
-                    resultado = result["RegresaBoletaResult"]["diffgram"];
-                    if(resultado == null){
-                        let end ={
-                            error : 'La boleta ingresada no existe'
-                        }
-                        resolve(end);
-                    }else{
-                        result = result["RegresaBoletaResult"]["diffgram"]["NewDataSet"]["Informacion"];
-                        prestamo = parseFloat(prestamo).toFixed(2);
-                        prestamoReal = parseFloat(result.Prestamo).toFixed(2);
-                        if(prestamo == prestamoReal){
-                            let objCom = {
-                                comision:'1.03'
-                            }
-                            Object.assign(result, objCom);
-                            resolve(result);
-                        }
-                       else{
-                           let error={
-                               error : "La informaci√≥n ingresada no es correcta."
-                           }
-                           resolve(error);
-                       }
-                    }
-                  
+        con.connection.query(SelectSucursal, function (error, results, fields) {
+            if(results != undefined){
+                Resultado= JSON.parse(JSON.stringify(results));
+                console.log(Resultado[0]);
+                let Comparar = [];
+
+                if(dia == 0){
+                    Comparar.push(Resultado[0].HoraAperturaD);
+                    Comparar.push(Resultado[0].HoraCierreD);
                 }
-              });
+                else{
+                    if(dia <= 5){
+                        Comparar.push(Resultado[0].HoraAperturaLV);
+                        Comparar.push(Resultado[0].HoraCierreLV);
+                    }else{
+                        Comparar.push(Resultado[0].HoraAperturaS);
+                        Comparar.push(Resultado[0].HoraCierreS);
+                  }
+                }
+                var invdate = new Date(d.toLocaleString('en-US', {
+                    timeZone: Resultado[0].zonahoraria
+                  }));
+                var DateLocal =(invdate.getHours()+":"+invdate.getMinutes()+":"+invdate.getSeconds()).toString();
+                  
+                if(DateLocal >= Comparar[0] && DateLocal <= Comparar[1]){
+                    BanderaEntrada = true;
+                }else{
+                    BanderaEntrada = false;
+                }
+                var url= "https://grupoalvarez.com.mx/wsconsultaboleta/serviciosconsultaboleta.asmx?WSDL"
+                const args = { strBoleta: boleta, strIdentificador: letra, strImporte:prestamo, flagEntra: BanderaEntrada};
+                soap.createClient(url, function(err, client) {
+                    if (err) console.error(err);
+                    else {
+                      client.RegresaBoleta(args, function(err, response) {
+                        if (err) console.error(err);
+                        else {
+                            result = JSON.parse(JSON.stringify(response));
+                            resultado = result["RegresaBoletaResult"]["diffgram"];
+                            if(resultado == null){
+                                let end ={
+                                    error : 'La boleta ingresada no existe'
+                                }
+                                resolve(end);
+                            }else{
+                                result = result["RegresaBoletaResult"]["diffgram"]["NewDataSet"]["Informacion"];
+                                prestamo = parseFloat(prestamo).toFixed(2);
+                                prestamoReal = parseFloat(result.Prestamo).toFixed(2);
+                                if(prestamo == prestamoReal){
+                                    let objCom = {
+                                        comision:'1.03'
+                                    }
+                                    Object.assign(result, objCom);
+                                    resolve(result);
+                                }
+                               else{
+                                   let error={
+                                       error : "La informaci√≥n ingresada no es correcta."
+                                   }
+                                   resolve(error);
+                               }
+                            }
+                          
+                        }
+                      });
+                    }
+                  });  
             }
-          });
+         });
+    });
+}
+let obtenerinfoboletaWSP = async function consultar(boleta,letra,prestamo){
+    var SelectSucursal ="SELECT HoraAperturaLV,HoraCierreLV,HoraAperturaS,HoraCierreS,HoraAperturaD,HoraCierreD,zonahoraria,now() as HoraActual FROM `sucursales` where identificador='"+letra+"'";
+    const d = new Date();
+    let dia = d.getDay();
+    let BanderaEntrada = true;
+    return new Promise(function(resolve,reject){
+        con.connection.query(SelectSucursal, function (error, results, fields) {
+            if(results != undefined){
+                Resultado= JSON.parse(JSON.stringify(results));
+                console.log(Resultado[0]);
+                let Comparar = [];
+
+                if(dia == 0){
+                    Comparar.push(Resultado[0].HoraAperturaD);
+                    Comparar.push(Resultado[0].HoraCierreD);
+                }
+                else{
+                    if(dia <= 5){
+                        Comparar.push(Resultado[0].HoraAperturaLV);
+                        Comparar.push(Resultado[0].HoraCierreLV);
+                    }else{
+                        Comparar.push(Resultado[0].HoraAperturaS);
+                        Comparar.push(Resultado[0].HoraCierreS);
+                  }
+                }
+                var invdate = new Date(d.toLocaleString('en-US', {
+                    timeZone: Resultado[0].zonahoraria
+                  }));
+                var DateLocal =(invdate.getHours()+":"+invdate.getMinutes()+":"+invdate.getSeconds()).toString();
+                  
+                if(DateLocal >= Comparar[0] && DateLocal <= Comparar[1]){
+                    BanderaEntrada = true;
+                }else{
+                    BanderaEntrada = false;
+                }
+                var url= "https://grupoalvarez.com.mx/wsconsultaboleta/serviciosconsultaboleta.asmx?WSDL"
+                const args = { strBoleta: boleta, strIdentificador: letra, strImporte:prestamo, flagEntra: BanderaEntrada};
+                soap.createClient(url, function(err, client) {
+                    if (err) console.error(err);
+                    else {
+                      client.RegresaBoleta(args, function(err, response) {
+                        if (err) console.error(err);
+                        else {
+                            result = JSON.parse(JSON.stringify(response));
+                            resultado = result["RegresaBoletaResult"]["diffgram"];
+                            if(resultado == null){
+                                let end ={
+                                    error : 'La boleta ingresada no existe'
+                                }
+                                resolve(end);
+                            }else{
+                                result = result["RegresaBoletaResult"]["diffgram"]["NewDataSet"]["Informacion"];
+                                const months = ["Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                                var date = new Date();
+                                const formatDate = (date)=>{
+                                let formatted_date = date.getDate() + " de " + months[date.getMonth()] + " del " + date.getFullYear()
+                                return formatted_date;
+                                }
+                                prestamo = parseFloat(prestamo).toFixed(2);
+                                prestamoReal = parseFloat(result.Prestamo).toFixed(2);
+                                if(prestamo == prestamoReal){
+                                    let Res = {
+                                        Cliente : result.Cliente,
+                                        Boleta : result.BoletaActual,
+                                        Fechavencimiento: formatDate(date),
+                                        Prestamo : parseFloat(result.Prestamo).toFixed(2),
+                                        Estatus : result.EstadoBoleta,
+                                        Refrendo : "1,305.80"
+                                    }
+                                    resolve(Res);
+                               }else{
+                                   let error={
+                                       error : "La informaci®Æn ingresada no es correcta."
+                                   }
+                                   resolve(error);
+                               }
+                            }
+                          
+                        }
+                      });
+                    }
+                  });  
+            }
+         });
     });
 }
 let avaluodeauto = async function consultar(ciudad,marca,modelo,tipo,cantidad,correo,telefono,nombre,primerapellido,segundoapellido,fechanacimiento){
@@ -227,6 +349,7 @@ let obtenerpreguntasporid = async function consultar(id){
     });
 }
 module.exports={
+    obtenerinfoboletaWSP,
     obtenerinfoboleta,
     calculadoraempeno,
     obtenerversionapp,

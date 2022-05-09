@@ -29,11 +29,27 @@ let ObtenerSaldoBoleta = async function consultar(usuario){
     return new Promise(function(resolve,reject){
         request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
                 var response = JSON.parse(body);
-                console.log(url)
-                console.log(response)
                 response = response.data.response;
                 response = response ? response : undefined;
                 if(response !== undefined){
+                    for(var i = 0 ; i < response.length;i++){
+                        response[i].Nombre = response[i].Nombre.trim();
+                        response[i].ApellidoP = response[i].ApellidoP.trim();
+                        response[i].ApellidoM = response[i].ApellidoM.trim();
+                        let Refrendo = parseFloat(response[i].Refrendo);
+                        let Poraplicar = parseFloat(response[i].SaldoPorAplicar);
+                        Refrendo = Refrendo - Poraplicar;
+                        response[i].Refrendo = Refrendo.toString();
+                        var importe = parseFloat(response[i].Refrendo);
+                        importe = importe - (parseInt(importe));
+                        var residuo = importe.toFixed(1);
+                        if(residuo > 0.5){
+                            importe = parseInt(response[i].Refrendo) + 1;
+                        }else{
+                            importe = parseInt(response[i].Refrendo) + 0.5;
+                        }
+                    }
+
                     resolve(response);
                 }else{
                     let error = {
@@ -45,11 +61,10 @@ let ObtenerSaldoBoleta = async function consultar(usuario){
 }
 
 let RegistrarCliente = async function consultar(Apellidop,Apellidom,Nombre,Celular,Corre,Contrasena){
-    var url="api/Registro/ApellidoP/"+Apellidop+"/ApellidoM/"+Apellidom+"/Nombre/"+Nombre+"/Celular/"+Celular+"/Correo/"+Corre+"/Contrasena/"+Contrasena;
+    var url="api/RegistroWeb/ApellidoP/"+Apellidop+"/ApellidoM/"+Apellidom+"/Nombre/"+Nombre+"/Celular/"+Celular+"/Correo/"+Corre+"/Contrasena/"+Contrasena;
     return new Promise(function(resolve,reject){
         request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
                 var response = JSON.parse(body);
-                console.log(response)
                 response = response.data.response;
                 response = response ? response : undefined;
                 if(response !== undefined){
@@ -68,7 +83,7 @@ let EditarCliente = async function consultar(Usuario,Apellidop,Apellidom,Nombre,
     return new Promise(function(resolve,reject){
         request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
                 var response = JSON.parse(body);
-                console.log(response)
+            
                 response = response.data.response;
                 response = response ? response : undefined;
                 if(response !== undefined){
@@ -87,7 +102,6 @@ let agregarboleta = async function consultar(usuario,boleta,letra,prestamo){
     return new Promise(function(resolve,reject){
         request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
                 var response = JSON.parse(body);
-                console.log(response)
                 response = response.data.response;
                 response = response ? response : [];
                 resolve(response);
@@ -119,7 +133,7 @@ let ObtenerCodigoFgtPassword = async function consultar(celular,correo){
     var url="api/ForgotPassword/ConfirmarDatos/Celular/"+celular+"/Correo/"+correo;
     return new Promise(function(resolve,reject){
         request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
-            console.log(body)
+
                 var response = JSON.parse(body);
                 response = response.data.response;
                 response = response ? response : undefined;
@@ -135,7 +149,38 @@ let ObtenerCodigoFgtPassword = async function consultar(celular,correo){
         });
     });
 }
-let ValidarcodigoFgtPassword = async function consultar(){
+let CambiarContraseña = async function consultar(usuario,contrasena){
+    var url="api/ForgotPassword/ChangePassword/Usuario/"+usuario+"/Contrasena/"+contrasena;
+    return new Promise(function(resolve,reject){
+        request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
+            let res={response:true};
+            resolve(res);
+        });
+    });
+}
+let Validarcodigo = async function consultar(usuario,codigo,tipo){
+    var url="api/ValidarCodigo/Usuario/"+usuario+"/Codigo/"+codigo+"/Tipo/"+tipo;
+    return new Promise(function(resolve,reject){
+        console.log(url)
+        request('http://grupoalvarez.com.mx:8089/maxilanaApp/'+url, function (error, response, body) {
+            var res = JSON.parse(body);
+            res = res.data.response;
+            res = res ? res : undefined;
+            if(res.length){
+                let resultado = {
+                    result : true
+                }
+                resolve(resultado);
+            }else{
+                let resultado = {
+                    result : false
+                }
+                resolve(resultado);
+            }
+      
+           
+        });
+    });
 
 }
 
@@ -164,9 +209,11 @@ module.exports={
     RegistrarCliente,
     ObtenerCodigoRegistro,
     ObtenerCodigoFgtPassword,
-    ValidarcodigoFgtPassword,
     dejanostucomentario,
     obtenercomentariosapp,
     agregarboleta,
-    EditarCliente
+    EditarCliente,
+    CambiarContraseña,
+    Validarcodigo
+    
 }

@@ -20,13 +20,10 @@ const secureppyvales = require('./webapi/pagos/3dsecurepagos')
 const prestamos = require('./webapi/prestamos/consultas');
 const pw2empeno = require('./webapi/pagos/pw2empeno');
 const pw2valesyprestamos = require('./webapi/pagos/pw2prestamosvales');
-const pw2subastas = require('./webapi/pagos/pw2subastas');
 const vales = require('./webapi/vales/consultas');
 const empeno = require('./webapi/empeno/consultas');
 const contacto = require('./webapi/serviciosadicionales/contacto');
 const sms = require('./webapi/sms/sendsms');
-const vtas = require('./consola/ventas');
-const pagosempeno = require('./consola/empeno');
 
 
 
@@ -44,7 +41,6 @@ let multer = require('multer');
 var uniqid = require("uuid");
 let upload = multer();
 const fs = require('fs');
-const { send } = require('process');
 
 const PORT = process.env.PORT || 3050;
 const app = express();
@@ -170,18 +166,6 @@ app.get('/api/boleta',(req,res)=>{
     let Monto = req.query.monto;
     if(Boleta !== undefined && Identificador !== undefined && Monto !== undefined){
         empeno.obtenerinfoboleta(Boleta,Identificador,Monto).then(respuesta=>{
-            res.send(respuesta);
-            });
-    }else{
-        res.send("No hay información para mostrar.");
-    }
- });
- app.get('/api/boleta/wsp',(req,res)=>{
-    let Boleta = req.query.boleta;
-    let Identificador = req.query.letra;
-    let Monto = req.query.monto;
-    if(Boleta !== undefined && Identificador !== undefined && Monto !== undefined){
-        empeno.obtenerinfoboletaWSP(Boleta,Identificador,Monto).then(respuesta=>{
             res.send(respuesta);
             });
     }else{
@@ -767,7 +751,7 @@ app.post('/api/procesar2dsecure/prestamopersonal',upload.array(),(req,res,next)=
                                     res.send("A")
                                 })
                           }else{
-                            var i = respuesta;
+
                             sendinfo.grabardatosprestamopersonalyvale(i.referencia,Reference3D,i.fecha_req_cte,i.auth_req_date,i.auth_rsp_date,i.fecha_rsp_cte,i.resultado_payw,i.auth_result,i.payw_code,i.codigo_aut,i.texto,i.card_holder,i.issuing_bank,i.card_brand,i.card_type,tarjetadecrypt,datainfo.correoelectronico,datainfo.monto,datainfo.codigosucursal,datainfo.codigoprestamo,0).then(response=>{
                                 let error={
                                     resultado :"Tarjeta declinada"
@@ -1160,11 +1144,7 @@ app.post('/api/procesar2dsecure/vales',upload.array(),(req,res,next)=>{
                                     res.send("A")
                                 })
                           }else{
-                            var i = respuesta;
-                            sendinfo.grabardatosprestamopersonalyvale(i.referencia,Reference3D,i.fecha_req_cte,i.auth_req_date,i.auth_rsp_date,i.fecha_rsp_cte,i.resultado_payw,i.auth_result,i.payw_code,i.codigo_aut,i.texto,i.card_holder,i.issuing_bank,i.card_brand,i.card_type,tarjetadecrypt,datainfo.correoelectronico,datainfo.monto,datainfo.codigosucursal,datainfo.codigoprestamo,1).then(response=>{
-                                res.send("D");
-                            })
-                            
+                              res.send("D");
                           }
                       });
                     });
@@ -1172,24 +1152,6 @@ app.post('/api/procesar2dsecure/vales',upload.array(),(req,res,next)=>{
             });
         });
 });
-app.post('/api/procesar2dsecure/subastas',upload.array(),(req,res,next)=>{
-    
-    var Reference3D= req.body.Reference3D;
-    var lotID= req.body.lotID;
-
-    pw2subastas.Obtenerdatos(Reference3D).then(respuesta=>{
-        var datainfo = respuesta[0];
-                    pw2subastas.ejecutarPago(datainfo.Monto,datainfo.referencia,datainfo.tarjeta,datainfo.vencimiento,datainfo.ccv,datainfo.status,datainfo.eci,datainfo.xid,datainfo.cavv,datainfo.control_number,lotID).then(respuesta=>{
-                        if(respuesta.resultado_payw == "A"){
-                            res.send("A");
-                        }else{
-                            res.send("D");
-                        }
-                      
-                 });
-        });
-});
-
 app.get('/api/image',(req,res)=>{
 
         const { url, w, h, q, blur } = req.query;
@@ -1375,9 +1337,8 @@ app.get('/api/usuarios/obtenercodigoregistro',upload.array(),(req,res)=>{
     celular = req.query.celular ? req.query.celular: undefined;
     users.ObtenerCodigoRegistro(celular).then(respuesta=>{
         if(respuesta != undefined){
-            let Mensaje = "Tu codigo de verificacion Maxilana es: "+respuesta.Codigo;
+            let Mensaje = "Tu codigo de verificacion maxilana es: "+respuesta.Codigo;
             sms.send(celular,Mensaje);
-            sms.sendInfoCentral(celular,Mensaje);
             res.send(respuesta);
         }else{
             let error={
@@ -1395,7 +1356,6 @@ app.get('/api/usuarios/obtenercodigorecuperacion',upload.array(),(req,res)=>{
             if(respuesta != undefined){
             let Mensaje = "Se genero el codigo de recuperacion de contraseña: "+respuesta.CodigoGenerado;
             sms.send(respuesta.Celular,Mensaje);
-            sms.sendInfoCentral(respuesta.Celular,Mensaje);
             delete respuesta.CodigoGenerado;
             res.send(respuesta);
         }else{
@@ -1411,9 +1371,6 @@ app.get('/api/usuarios/Validarcodigo/:acccion',upload.array(),(req,res)=>{
     let user = req.query.user ? req.query.user: 0;
     let codigo = req.query.codigo ? req.query.codigo: "Novalido";
     if(acccion =='Alta'){
-        if(user == 'undefined'){
-            user = 0;
-        }
         users.Validarcodigo(user,codigo,2).then(respuesta=>{
     
             res.send(respuesta);
@@ -1453,9 +1410,6 @@ app.get('/api/usuarios/validarcodigorecuperacion',(req,res)=>{
 app.post('/api/maxilanasms',upload.array(),(req,res)=>{
     if(req.body.celular !== undefined & req.body.mensaje !== undefined){
         sms.send(req.body.celular,req.body.mensaje).then(response=>{
-
-            sms.sendInfoCentral(req.body.celular,req.body.mensaje);
-
             res.send(response);
         })
     
@@ -1463,47 +1417,11 @@ app.post('/api/maxilanasms',upload.array(),(req,res)=>{
     
 });
 
-app.get('/api/subastasms', (req,res)=>{
-
-    let mensaje = req.query.sms ? req.query.sms : undefined;
-    let celular = req.query.celular ? req.query.celular : undefined;
-    sms.send(celular,mensaje).then(response=>{
-        sms.sendInfoCentral(celular,mensaje);
-
-        res.send("200");
-    })
-
-});
-
 app.get('/api/procesos/pagospendientes',(req,res)=>{
     procesos.ejecutarprocesodepagos().then(respuesta=>{
-        procesos.ejecutarprocesodepagospp();
         res.send(respuesta);
     });
 });
-
-app.get('/api/consola/pagos/ventas',(req,res)=>{
-    var tipo = req.query.tipo ? req.query.tipo : 1;
-    var upc = req.query.upc ? req.query.upc :0;
-    vtas.obtenerventas(tipo,upc).then(respuesta=>{
-            res.send(respuesta);
-    })
-});
-app.post('/api/consola/pagos/empeno',upload.array(),(req,res)=>{
-
-   var bol = req.body.Boleta;
-   var CodigoAuth = req.body.CodigoAuth;
-   var Referencia = req.body.Referencia;
-   pagosempeno.Obtenerpagos(bol,CodigoAuth,Referencia).then(response=>{
-       res.send(response);
-   })
-})
-app.post('/api/consola/pagos/ppyvales',upload.array(),(req,res)=>{
-
-})
-
-
-
 
 app.post('/api/subastas/encrypt',upload.array(),(req,res)=>{
 

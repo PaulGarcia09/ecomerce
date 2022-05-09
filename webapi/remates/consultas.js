@@ -5,7 +5,7 @@ let Obtenertodo = async function consultar(categoria,query,sucursal,ciudades,cat
     vtalinea = vtalinea ? vtalinea : undefined;
     let ordenar ='';
     let rangodeprecios = '';
-    let selectinicial = 'select r.codigo,r.tipo as idcategoria,t.slug as slugcategoria,t.nombre as nombrecategoria,CASE WHEN r.tipo =10 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=54 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=57 THEN CONCAT(r.nombre," ",r.marca) ELSE r.nombre end as nombre,r.sucursal as idsucursal,s.nombre as nombresucursal,s.slug as slugsucursal, c.id as idciudad,c.nombre as ciudadnombre,c.slug as slugciudad, r.precio,r.precioneto,r.marca,r.observaciones,r.imagen,r.imagen,r.precod,r.ventalinea,cd.costo as descuento,UNIX_TIMESTAMP(r.fechaimagen) as fechaimagen from remates r , sucursales s, ciudades c, tipos t, catdescuentosadicionales cd where s.numero = r.sucursal and c.id = s.ciudad and t.id = r.tipo and cd.tipo=r.tipo'
+    let selectinicial = 'select r.codigo,r.tipo as idcategoria,t.slug as slugcategoria,t.nombre as nombrecategoria,CASE WHEN r.tipo =10 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=54 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=57 THEN CONCAT(r.nombre," ",r.marca) ELSE r.nombre end as nombre,r.sucursal as idsucursal,s.nombre as nombresucursal,s.slug as slugsucursal, c.id as idciudad,c.nombre as ciudadnombre,c.slug as slugciudad, r.precio,r.precioneto,r.marca,r.observaciones,r.imagen,r.imagen,r.precod,r.ventalinea,cd.costo as descuento, UNIX_TIMESTAMP(r.fechaimagen) as fechaimagen from remates r , sucursales s, ciudades c, tipos t, catdescuentosadicionales cd where s.numero = r.sucursal and c.id = s.ciudad and t.id = r.tipo and cd.tipo=r.tipo'
     if(max !== undefined){
         rangodeprecios = rangodeprecios + " and r.precioneto <="+max;
     }
@@ -123,11 +123,11 @@ let Obtenertodo = async function consultar(categoria,query,sucursal,ciudades,cat
 }
 
 let Obtenertodoprueba = async function consultar(categoria,query,sucursal,ciudades,categoria_or,query_or,sucursal_or,ciudades_or,orden,min,max,vtalinea,page,limits,codigo){
-    let consulta = 'select * from productos WHERE codigo in("001949106","001949644")'
-  //  let filsucursal =   " where articulo ->> '$.Sucursal'="+"'"+sucursal+"'";
-   // let ventalinea =   " and articulo ->> '$.VentaLinea'="+"'"+vtalinea+"'";
-   // consulta = consulta + filsucursal;
-   // console.log(consulta);
+    let consulta = 'select * from productos'
+    let filsucursal =   " where articulo ->> '$.Sucursal'="+"'"+sucursal+"'";
+    let ventalinea =   " and articulo ->> '$.VentaLinea'="+"'"+vtalinea+"'";
+    consulta = consulta + filsucursal;
+    console.log(consulta);
     let Filtrado = {};
     let fill = [];
     return new Promise(function(resolve,reject){
@@ -174,6 +174,7 @@ let Obtenertodoprueba = async function consultar(categoria,query,sucursal,ciudad
                         console.log(item)
                         if(!lookup.includes(item[Filtros[j]])){
                             lookup.push(item[Filtros[j]]);
+                            console.log("entro");   
                         }
                     }
                 }
@@ -242,7 +243,7 @@ var removeItemFromArr = ( arr, item ) => {
 };
 let Obtenerarticulosid = async function consultar(items){
     let consulta='';
-    let selectinicial = 'select r.codigo,r.tipo as idcategoria,t.slug as slugcategoria,t.nombre as nombrecategoria,r.nombre,r.sucursal as idsucursal,s.nombre as nombresucursal,s.slug as slugsucursal, c.id as idciudad,c.nombre as ciudadnombre,c.slug as slugciudad, r.precio,r.precioneto,r.marca,r.observaciones,r.imagen,r.imagen,r.precod,r.ventalinea,cd.costo as descuento from remates r , sucursales s, ciudades c, tipos t, catdescuentosadicionales cd where s.numero = r.sucursal and c.id = s.ciudad and t.id = r.tipo and cd.tipo=r.tipo'
+    let selectinicial = 'select r.codigo,r.tipo as idcategoria,t.slug as slugcategoria,t.nombre as nombrecategoria,CASE WHEN r.tipo =10 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=54 THEN CONCAT(r.marca," ",r.nombre) WHEN r.tipo=57 THEN CONCAT(r.nombre," ",r.marca) ELSE r.nombre end as nombre,r.sucursal as idsucursal,s.nombre as nombresucursal,s.slug as slugsucursal, c.id as idciudad,c.nombre as ciudadnombre,c.slug as slugciudad, r.precio,r.precioneto,r.marca,r.observaciones,r.imagen,r.imagen,r.precod,r.ventalinea,cd.costo as descuento, UNIX_TIMESTAMP(r.fechaimagen) as fechaimagen from remates r , sucursales s, ciudades c, tipos t, catdescuentosadicionales cd where s.numero = r.sucursal and c.id = s.ciudad and t.id = r.tipo and cd.tipo=r.tipo'
     items = items.replace(/,/g,"','");
     consulta = selectinicial + " and r.codigo in('"+items+"')";
     return new Promise(function(resolve,reject){
@@ -259,6 +260,25 @@ let Obtenerarticulosid = async function consultar(items){
                 // Subdescuento = Subdescuento.toFixed(2);
                 // Resultado[0].precioneto = parseFloat(Subdescuento);
                 // }
+                    resolve(Resultado[0]);
+        
+        }   else{
+            resolve("No hay información para mostrar.")
+        }
+         });
+    });
+}
+let Obtenerarticulosidprecio = async function consultar(items){
+    let consulta='';
+    let selectinicial = 'select  r.precio,r.precioneto,cd.costo as descuento from remates r , sucursales s, ciudades c, tipos t, catdescuentosadicionales cd where s.numero = r.sucursal and c.id = s.ciudad and t.id = r.tipo and cd.tipo=r.tipo'
+    items = items.replace(/,/g,"','");
+    consulta = selectinicial + " and r.codigo in('"+items+"')";
+    return new Promise(function(resolve,reject){
+        let query = consulta;
+
+            con.connection.query(query, function (error, results, fields) {
+                if(results != undefined){
+                Resultado = JSON.parse(JSON.stringify(results));
                     resolve(Resultado[0]);
         
         }   else{
@@ -287,5 +307,6 @@ module.exports={
     Obtenertodo,
     Obtenerarticulosid,
     Obtenertodoprueba,
-    Obtenertipos
+    Obtenertipos,
+    Obtenerarticulosidprecio
 }

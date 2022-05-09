@@ -9,14 +9,14 @@ let Obtenerdatosboletas = async function datos(referencia,eci,xid,cavv,status,ca
             let query = 'insert into informacion3dsecure(reference, eci, xid, cavv, status, cardtype) values '+
             '('+"'"+referencia+"'"+', '+"'"+eci+"'"+', '+"'"+xid+"'"+', '+"'"+cavv+"'"+', '+"'"+status+"'"+', '+"'"+cardtype+"'"+')';
             con.connection.query(query,function(error,results,fields){
-                let query2 = 'SELECT i.id,i.idPrincipal,i.monto,i.tarjeta,i.vencimiento,i.cvv2 as ccv2, i.correoelectronico, i.codigosucursal, i.boleta,p.correoelectronicoparanotificacion,inf.cardtype,inf.status,inf.cavv,inf.xid,inf.eci,s.nombre as sucnom,i.fecha,i.codigotipopago, i.fechaconsulta,i.diaspagados FROM `informacionpw2` i inner join informacion3dsecure inf on inf.reference=i.id inner join sucursales s on s.numero = i.codigosucursal inner join plazas p on p.codigo = s.ciudad where inf.reference='+"'"+referencia+"'";
+                let query2 = "SELECT i.id,i.idPrincipal,i.monto,i.tarjeta,i.vencimiento,i.cvv2 as ccv2, i.correoelectronico, i.codigosucursal, i.boleta,CONCAT(s.correoelectronico,',',p.correoelectronicoparanotificacion) as correoelectronicoparanotificacion ,inf.cardtype,inf.status,inf.cavv,inf.xid,inf.eci,s.nombre as sucnom,i.fecha,i.codigotipopago, i.fechaconsulta,i.diaspagados FROM `informacionpw2` i inner join informacion3dsecure inf on inf.reference=i.id inner join sucursales s on s.numero = i.codigosucursal inner join plazas p on p.codigo = s.ciudad where inf.reference="+"'"+referencia+"'";
                 con.connection.query(query2, function (error, results, fields) {
                 Resultado = JSON.parse(JSON.stringify(results));
                 resolve(Resultado)
                  });
             });
         }else{
-            let query = 'SELECT i.id,i.idPrincipal,i.monto,i.tarjeta,i.vencimiento,i.cvv2 as ccv2, i.correoelectronico, i.codigosucursal, i.boleta,p.correoelectronicoparanotificacion,inf.cardtype,inf.status,inf.cavv,inf.xid,inf.eci,s.nombre as sucnom,i.fecha,i.codigotipopago, i.fechaconsulta,i.diaspagados FROM `informacionpw2` i inner join informacion3dsecure inf on inf.reference=i.id inner join sucursales s on s.numero = i.codigosucursal inner join plazas p on p.codigo = s.ciudad where inf.reference='+"'"+referencia+"'";
+            let query = "SELECT i.id,i.idPrincipal,i.monto,i.tarjeta,i.vencimiento,i.cvv2 as ccv2, i.correoelectronico, i.codigosucursal,i.boleta,CONCAT(s.correoelectronico,',',p.correoelectronicoparanotificacion) as correoelectronicoparanotificacion,inf.cardtype,inf.status,inf.cavv,inf.xid,inf.eci,s.nombre as sucnom,i.fecha,i.codigotipopago, i.fechaconsulta,i.diaspagados FROM `informacionpw2` i inner join informacion3dsecure inf on inf.reference=i.id inner join sucursales s on s.numero = i.codigosucursal inner join plazas p on p.codigo = s.ciudad where inf.reference="+"'"+referencia+"'";
             con.connection.query(query, function (error, results, fields) {
             Resultado = JSON.parse(JSON.stringify(results));
             resolve(Resultado)
@@ -97,7 +97,7 @@ let ejecutarcobroprueba = async function venta(vencimiento,ccv,tarjeta,Monto,bol
     let total  = parseFloat(Monto).toFixed(2);
 
     return new Promise(function(resolve,reject){
-        var referencia = 'R-'+Math.floor(boleta);;
+        var referencia = 'R-'+Math.floor(boleta);
         
         var myJSONObject={
             MERCHANT_ID   : env.parsed.merchant_id,
