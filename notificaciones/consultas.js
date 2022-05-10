@@ -1,6 +1,7 @@
 const { Console } = require('console');
 const con = require("../db/conexion")
 const Not = require("./notificaciones");
+const sms = require('../webapi/sms/sendsms');
 let cBoletasvencidas = async function consultar(){
     return new Promise(function(resolve,reject){
         var url= "http://grupoalvarez.com.mx:8089/maxilanaApp/api/Notificaciones/Boletasvencidas";
@@ -49,6 +50,25 @@ let cBoletasvencidas = async function consultar(){
         });
     });
 }
+let ObtenerMensajesParaNotificar = async function consultar(){
+    return new Promise(function(resolve,reject){
+        var url= "http://grupoalvarez.com.mx:8089/maxilanaApp/api/Notificaciones/sms/Boletasvencidas";
+        var request = require('request');
+        request.get({
+        headers: {'content-type' : 'application/x-www-form-urlencoded'},
+        url:     url,
+        }, function(error, response, body){
+            Resultado = JSON.parse(response.body);
+            Res = Resultado.data.response;
+            for(var j = 0 ; j < Res.length ; j++){
+                sms.send(Res[j].NumeroTelefonico, Res[j].Mensaje);
+            }
+            resolve(Res);
+        });
+    });
+}
+
 module.exports={
-    cBoletasvencidas
+    cBoletasvencidas,
+    ObtenerMensajesParaNotificar
 }

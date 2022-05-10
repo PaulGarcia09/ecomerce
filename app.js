@@ -1225,6 +1225,15 @@ app.get('/api/notificaciones/procesos/consultarvencidas',(req,res)=>{
     })
 });
 
+
+app.get('/api/notificaciones/procesos/consultarvencidas/sms',(req,res)=>{
+    ConsultarNotificaciones.ObtenerMensajesParaNotificar().then(respuesta=>{
+            res.send(respuesta);
+    })
+});
+
+//SMS Boletas
+
 app.post('/api/enviarsms',upload.array(),(req,res)=>{
 
     let number = req.query.celular ? req.query.celular : undefined;
