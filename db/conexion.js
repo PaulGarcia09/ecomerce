@@ -1,29 +1,25 @@
 const mysql = require('mysql');
 const sql = require("mssql");
+const env = require('../node_modules/dotenv').config({ path: '../.env' });
 let connection  = mysql.createConnection({
         connectionLimit : 10,
-        host            : '198.12.231.45',
-        user            : 'maxilanabd',
-        password        : 'Cuitlahuac9607',
-        database        : 'maxilanabd',
-        charset         : 'utf8'
+        host            : env.hostMysqlGD,
+        user            : env.userMysqlGD,
+        password        : env.passwordMysqlGD,
+        database        : env.databaseMysqlGD,
+        charset         : env.charsetMysqlGD
 });  
+
 let connectionsubastas  = mysql.createConnection({
   connectionLimit : 10,
-  host            : '174.136.28.68',
-  user            : 'erick',
-  password        : 'erick2021',
-  database        : 'abroadcaster',
-  charset         : 'utf8'
+  host            : env.hostMysqlSUB,
+  user            : env.userMysqlSUB,
+  password        : env.passwordMysqlSUB,
+  database        : env.databaseMysqlSUB,
+  charset         : env.charsetMysqlSUB
 });
-let sqlconnection = new sql.ConnectionPool({
-  user: 'sa',
-  password: 'napire960702',
-  server: '10.0.0.232', 
-  database: 'Subastas' 
-});
+
 module.exports = {
  connection,
- sqlconnection,
  connectionsubastas
 }
